@@ -9,6 +9,7 @@ var fs			= require('fs')
 	, io		= require('socket.io').listen(server)
 	, redis		= require('socket.io-redis')
 	, db		= require('redis').createClient('6379','127.0.0.1')
+	, path		= require('path')
 	, router	= express.Router()
 	, client	= []
 	, Files		= {};
@@ -26,7 +27,8 @@ function DownloadFile(req, res){
 router.get('/download/:filename', DownloadFile);
 router.get('/', function(req, res){
   console.log("Request from : " + req.socket.remoteAddress);
-  res.send("Hello this is fwfly upload download server")
+  //res.send("Hello this is fwfly upload download server")
+	res.sendFile(path.join(__dirname + '/index.html'));
 });
 
 app.use('/', router);
