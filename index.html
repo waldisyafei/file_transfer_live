@@ -4,6 +4,7 @@
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 		<title>Live File Transfer</title>
 		<script src="http://infocomputer.org:8080/socket.io/socket.io.js"></script>
+		<!--<script src="http://localhost:8080/socket.io/socket.io.js"></script>-->
 		<script type="text/javascript" charset="utf-8">
 			window.addEventListener("load", Ready); 
 			
@@ -118,7 +119,7 @@
 				document.getElementById('MB').innerHTML = MBDone;
 			}
 			
-			var Path = "http://localhost:8080/";
+			var Path = "http://infocomputer:8080/";
 			
 			socket.on('Done', function (data){
 				var Content = "File Successfully Uploaded !!"
@@ -134,7 +135,7 @@
 			socket.on('Doneclient', function (data){
 				console.log(data);
 				var Content = "File " + data.name + " Successfully Uploaded !!"
-				Content += "<a href='http://localhost:8080/download/"+data.name+"'><button	type='button' name='Upload' value='' id='Restart' class='Button' >Click here to download file</button></a>";
+				Content += "<a href='http://infocomputer:8080/download/"+data.name+"'><button	type='button' name='Upload' value='' id='Restart' class='Button' >Click here to download file</button></a>";
 				document.getElementById('UploadArea').innerHTML = Content;
 				//document.getElementById('Restart').addEventListener('click', Refresh);
 				document.getElementById('UploadBox').style.width = '350px';
