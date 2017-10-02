@@ -2,7 +2,7 @@ var fs			= require('fs')
 	, exec		= require('child_process').exec
 	//, util		= require('util')
 	, child		= require('child_process')
-	, mimetype	= require('mimetype')  
+	//, mimetype	= require('mimetype')  
 	, express	= require('express')
 	, app		= express()
 	, server	= require('http').createServer(app)
@@ -138,7 +138,7 @@ io.sockets.on('connection', function (socket) {
 							//exec("ffmpeg -i Video/" + Name  + " -ss 01:30 -r 1 -an -vframes 1 -f mjpeg Video/" + Name  + ".jpg", function(err){
 								
 							socket.emit('Done', {'Image' : 'temp/' + Name + '.jpg'});
-							socket.broadcast.to(client[1]).emit('Doneclient', {'name' : Name )});
+							socket.broadcast.to(client[1]).emit('Doneclient', {'name' : Name });
 							//});
 						//});
 					});
