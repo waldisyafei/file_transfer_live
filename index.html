@@ -119,8 +119,6 @@
 				document.getElementById('MB').innerHTML = MBDone;
 			}
 			
-			var Path = "http://infocomputer:8080/";
-			
 			socket.on('Done', function (data){
 				var Content = "File Successfully Uploaded !!"
 				/*Content += "<img id='Thumb' src='" + Path + data['Image'] + "' alt='" + Name + "'><br>";*/
@@ -135,7 +133,7 @@
 			socket.on('Doneclient', function (data){
 				console.log(data);
 				var Content = "File " + data.name + " Successfully Uploaded !!"
-				Content += "<a href='http://infocomputer:8080/download/"+data.name+"'><button	type='button' name='Upload' value='' id='Restart' class='Button' >Click here to download file</button></a>";
+				Content += "<a href='http://infocomputer/download/"+data.name+"'><button	type='button' name='Upload' value='' id='Restart' class='Button' >Click here to download file</button></a>";
 				document.getElementById('UploadArea').innerHTML = Content;
 				//document.getElementById('Restart').addEventListener('click', Refresh);
 				document.getElementById('UploadBox').style.width = '350px';
