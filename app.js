@@ -2,7 +2,7 @@ var fs			= require('fs')
 	, exec		= require('child_process').exec
 	//, util		= require('util')
 	, child		= require('child_process')
-	//, mimetype	= require('mimetype')  
+	, mimetype	= require('mimetype')  
 	, express	= require('express')
 	, app		= express()
 	, server	= require('http').createServer(app)
@@ -17,8 +17,9 @@ var fs			= require('fs')
 
 function DownloadFile(req, res){
 	try {
-		var filestream = fs.createReadStream("./temp/"+req.params.filename)
-		res.setHeader('Content-type', "application/octet-stream");
+		var filestream = fs.createReadStream("./temp/"+req.params.filename);
+		var type = mimetype.lookup(req.params.filename);
+		res.setHeader('Content-type', type);
 		res.setHeader('Content-disposition', 'attachment; filename='+req.params.filename);
 		filestream.pipe(res);
 	} catch (e) { console.log(e); }
