@@ -6,16 +6,16 @@
 		<script src="http://infocomputer.org:8080/socket.io/socket.io.js"></script>
 		<script type="text/javascript" charset="utf-8">
 			window.addEventListener("load", Ready); 
-			
+
 			function Ready(){ 
 				document.getElementById('uploadfile').addEventListener('click', uploadfile);  
 				document.getElementById('receivefile').addEventListener('click', receivefile);  
 			}
-			
+
 			var socket = io.connect('http://infocomputer.org:8080');
-			
+
 			function uploadfile(){
-				var Content = '<h2 style="text-align: center;">Live File Transfer</h2><span id="UploadArea"><label for="FileBox">Choose A File: </label><input type="file" id="FileBox"><br><label for="NameBox">Name: </label><input type="text" id="NameBox"><br><button	type="button" id="UploadButton" class="Button">Upload</button></span>';
+				var Content = '<h2 style="text-align: center;">Live File Transfer</h2><span id="UploadArea"><label for="FileBox">Choose A File: </label><input type="file" id="FileBox"><br><label for="NameBox">Name: </label><input type="text" id="NameBox"><br><div style="text-align: center"><button	type="button" id="UploadButton" class="Button">Upload</button></div></span>';
 				document.getElementById('UploadBox').style.height = '200px';
 				document.getElementById('UploadBox').innerHTML = Content;
 				if(window.File && window.FileReader){ //These are the necessary HTML5 objects the we are going to use 
@@ -29,29 +29,33 @@
 			}
 
 			function receivefile(){
-				var Content = '<h2 style="text-align: center;">Live File Transfer</h2><div><label for="username">Your id: </label><label id="username"></label><br><span id="UploadArea"></span></div>';
-				document.getElementById('UploadBox').style.height = '100px';
+				var Content = '<h2 style="text-align: center;">Live File Transfer</h2><div id="id"><h3><label for="username">Your id: </label><span><label id="username"></label></span><br><span id="UploadArea"></span></h3></div><div style="text-align: center"><button	type="button" id="cancel" class="Button">cancel</button></div>';
+				document.getElementById('UploadBox').style.height = '160px';
 				document.getElementById('UploadBox').innerHTML = Content;
-				
+				document.getElementById('cancel').addEventListener('click', cancelupload);  
+			
+			function cancelupload(){
+				location.reload(true);
+				return;
+			}
 				//var socket = io.connect('http://infocomputer.org:8080');
 				socket.emit('getid');
-				
+
 				socket.on( 'setid', function(id) { 
-					//console.log(id);
 					document.getElementById('username').innerHTML=id;
 				});		
-			
+
 			}
-			
+
 			var SelectedFile;
 			function FileChosen(evnt) {
 				SelectedFile = evnt.target.files[0];
 				document.getElementById('NameBox').value = SelectedFile.name;
-		    }
-		
+			}
+
 			var FReader;
 			var Name;
-			
+
 			function StartUpload(){
 				var id=prompt("Input your friend's id to send file");	
 				if (id===null || id ==="")		
@@ -67,11 +71,10 @@
 			});
 
 			socket.on('confirmation', function(socketto){
-				//console.log(socketto);
 				var hi= confirm("Accept connection?");
 				if (hi== true){
 					socket.emit('confirmation', socketto, true);
-			    }else{
+				}else{
 					socket.emit('confirmation', socketto, false);
 				}	
 			});
@@ -104,7 +107,7 @@
 					alert("Please Select A File");
 				}
 			});
-			
+
 			socket.on('TriggerDownload', function(data){
 				var Content = "<span id='NameArea'>Uploading " + data.name + "</span>";
 				Content += '<div id="ProgressContainer"><div id="ProgressBar"></div></div><span id="percent">50%</span>';
@@ -121,9 +124,7 @@
 					NewFile = SelectedFile.webkitSlice(Place, Place + Math.min(524288, (SelectedFile.size-Place)));
 				}
 				else if (SelectedFile.mozSlice){
-					//console.log(SelectedFile);
 					NewFile = SelectedFile.mozSlice(Place, Place + Math.min(524288, (SelectedFile.size-Place)));
-				
 				}
 				else {
 					NewFile = SelectedFile.slice(Place, Place + Math.min(524288,(SelectedFile.size-Place)));
@@ -137,10 +138,9 @@
 				var MBDone = Math.round(((percent/100.0) * SelectedFile.size) / 1048576);
 				document.getElementById('MB').innerHTML = MBDone;
 			}
-			
+
 			socket.on('Done', function (data){
 				var Content = "File Successfully Uploaded !!"
-				/*Content += "<img id='Thumb' src='" + Path + data['Image'] + "' alt='" + Name + "'><br>";*/
 				Content += "<button	type='button' name='Upload' value='' id='Restart' class='Button'>Upload Another</button>";
 				document.getElementById('UploadArea').innerHTML = Content;
 				document.getElementById('Restart').addEventListener('click', Refresh);
@@ -148,9 +148,8 @@
 				document.getElementById('UploadBox').style.textAlign = 'center';
 				document.getElementById('Restart').style.left = '20px';
 			});
-			
+
 			socket.on('Doneclient', function (data){
-				//console.log(data);
 				var Content = "File " + data.name + " Successfully Uploaded !!"
 				Content += "<a href='http://infocomputer.org:8080/download/"+data.name+"'><button	type='button' name='Upload' value='' id='Restart' class='Button' >Click here to download file</button></a>";
 				document.getElementById('UploadArea').innerHTML = Content;
@@ -161,142 +160,136 @@
 				document.getElementById('Restart').style.left = '20px';
 			});
 
-		//	var Refresh = function (name, mimetype){
 			function Refresh(){
-				//return function (){
 				location.reload(true);
-				//}
 			}
 		</script>
-<style type="text/css" media="screen">
-body {
-	background: #F9F9F9;
-	font-family: Calibri;
-	font-size: 18px;
-}
+		<style type="text/css" media="screen">
+			body {
+				background: #F9F9F9;
+				font-family: Calibri;
+				font-size: 18px;
+			}
 
-h2 {
-	font-size: 40px;
-	margin-top: 6px;
-	margin-bottom: 10px;
-}
+			h2 {
+				font-size: 40px;
+				margin-top: 6px;
+				margin-bottom: 10px;
+			}
 
-#Thumb {
-	max-width: 230px;
-	max-height: 130px;
-}
+			#Thumb {
+				max-width: 230px;
+				max-height: 130px;
+			}
 
-#ProgressContainer {
-	width: 396px;
-	height: 36px;
-	background: #F8F8F8;
-	margin-top: 14px;
-	border: 1px solid #E8E8E8;
-	border-top: 1px solid #D8D8D8;
+			#ProgressContainer {
+				width: 396px;
+				height: 36px;
+				background: #F8F8F8;
+				margin-top: 14px;
+				border: 1px solid #E8E8E8;
+				border-top: 1px solid #D8D8D8;
 
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	padding: 2px;
-}
+				-webkit-border-radius: 4px;
+				-moz-border-radius: 4px;
+				border-radius: 4px;
+				padding: 2px;
+			}
 
-#ProgressBar {
-	height: 100%;
-	width: 0%;
+			#ProgressBar {
+				height: 100%;
+				width: 0%;
 
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	border-radius: 4px;
-	background: -webkit-gradient( linear, left top, left bottom, from(#a50aad), color-stop(0.50, #6b0d6b), to(#4a074a));
-}
+				-webkit-border-radius: 4px;
+				-moz-border-radius: 4px;
+				border-radius: 4px;
+				background: -webkit-gradient( linear, left top, left bottom, from(#a50aad), color-stop(0.50, #6b0d6b), to(#4a074a));
+			}
 
-#UploadBox {
-	background: #FFF;
-	padding: 20px;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	margin-left: -200px;
-	margin-top: -150px;
-	height: 150px;
-	width: 405px;
-	border: 3px solid #6b0d6b;
-	/*border: 1px solid #DFDFDF;*/ 
-	-webkit-box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
-	-moz-box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
-	box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
+			#UploadBox {
+				background: #FFF;
+				padding: 20px;
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				margin-left: -200px;
+				margin-top: -150px;
+				height: 150px;
+				width: 418px;
+				border: 3px solid #6b0d6b;
+				/*border: 1px solid #DFDFDF;*/ 
+				-webkit-box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
+				-moz-box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
+				box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
 
-	-webkit-border-radius: 11px;
-	-moz-border-radius: 11px;
-	border-radius: 11px;
-}
+				-webkit-border-radius: 11px;
+				-moz-border-radius: 11px;
+				border-radius: 11px;
+			}
 
-button.Button {
-	font-size: 18px;
-	color: #ffffff;
-	padding: 8px 30px;
-	background: -webkit-gradient( linear, left top, left bottom, from(#a50aad), color-stop(0.50, #6b0d6b), to(#4a074a));
+			button.Button {
+				font-size: 18px;
+				color: #ffffff;
+				padding: 8px 30px;
+				background: -webkit-gradient( linear, left top, left bottom, from(#a50aad), color-stop(0.50, #6b0d6b), to(#4a074a));
 
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	border: 1px solid #5b139e;
+				-webkit-border-radius: 5px;
+				-moz-border-radius: 5px;
+				border-radius: 5px;
+				border: 1px solid #5b139e;
 
-	-webkit-box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 3px rgba(255,255,255,0.4);
-	-moz-box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 3px rgba(255,255,255,0.4);
-	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 3px rgba(255,255,255,0.4);
-	text-shadow: 0px -1px 0px rgba(000,000,000,0.1), 0px 1px 0px rgba(145,035,145,1);
-	cursor: pointer;
-	margin: auto;
-}
+				-webkit-box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 3px rgba(255,255,255,0.4);
+				-moz-box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 3px rgba(255,255,255,0.4);
+				box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 3px rgba(255,255,255,0.4);
+				text-shadow: 0px -1px 0px rgba(000,000,000,0.1), 0px 1px 0px rgba(145,035,145,1);
+				cursor: pointer;
+				margin: auto;
+			}
 
-button.Button:hover {
-	background: -webkit-gradient( linear, left top, left bottom, from(#a50aad), color-stop(0.80, #6b0d6b), to(#a50aad));
-	color: #D3D3D3;
-}
+			button.Button:hover {
+				background: -webkit-gradient( linear, left top, left bottom, from(#a50aad), color-stop(0.80, #6b0d6b), to(#a50aad));
+				color: #D3D3D3;
+			}
 
-button.Button:active {
-	background: -webkit-gradient( linear, left top, left bottom, from(#4a074a), color-stop(0.80, #6b0d6b), to(#a50aad));
-}
+			button.Button:active {
+				background: -webkit-gradient( linear, left top, left bottom, from(#4a074a), color-stop(0.80, #6b0d6b), to(#a50aad));
+			}
 
-input {
-	margin-top: 10px;
-	margin-bottom: 8px;
-}
+			input {
+				margin-top: 10px;
+				margin-bottom: 8px;
+			}
 
-input[type=text] {
-	border: 1px solid #CDCDCD;
-	border-top: 1px solid #676767;
+			input[type=text] {
+				border: 1px solid #CDCDCD;
+				border-top: 1px solid #676767;
 
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
-	font-size: 18px;
-	padding: 2px;
-	width: 300px;
-	margin-left: 10px;
-}
+				-webkit-border-radius: 3px;
+				-moz-border-radius: 3px;
+				border-radius: 3px;
+				font-size: 18px;
+				padding: 2px;
+				width: 300px;
+				margin-left: 10px;
+			}
 
+			#id {
+				font-size: 18px;
+				text-align: center;
+			}
+
+			#id span{
+				color:#F00;
+				font-weight:bold;
+			}
 		</style>
 	</head>
 	<body> 
 		<div id="UploadBox">
 			<h2 style="text-align: center;">Live File Transfer</h2>
 			<button	type='button' id='uploadfile' class='Button' style="width:200px; height:80px">Upload File</button>
+			&nbsp;&nbsp;
 			<button	type='button' id='receivefile' class='Button' style="width:200px; height:80px">Receive File</button>
-			<!--<h2 style="text-align: center;">Live File Transfer</h2>-->
-			<!--<span id='UploadArea'>-->
-				<!--<label for="FileBox">Choose A File: </label><input type="file" id="FileBox"><br>-->
-				<!--<label for="NameBox">Name: </label><input type="text" id="NameBox"><br>-->
-				<!--<label for="username">id: </label><input type="text" id="username"><br>-->
-				<!--<button	type='button' id='UploadButton' class='Button'>Upload</button>-->
-			<!--</span>-->
-			
-			<!--
-	position: absolute;
-	bottom: 20px;
-	right: 20px;-->
-
 		</div>
 	</body>
 </html>
