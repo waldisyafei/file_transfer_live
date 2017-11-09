@@ -3,12 +3,22 @@
 	<head>
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
 		<title>Live File Transfer</title>
-		<script src="http://infocomputer.org:8080/socket.io/socket.io.js"></script>
+		<script src="http://localhost:8080/socket.io/socket.io.js"></script>
 		<!--<script src="http://localhost:8080/socket.io/socket.io.js"></script>-->
 		<script type="text/javascript" charset="utf-8">
 			window.addEventListener("load", Ready); 
 			
 			function Ready(){ 
+				document.getElementById('uploadfile').addEventListener('click', uploadfile);  
+				document.getElementById('receivefile').addEventListener('click', receivefile);  
+			}
+			
+			var socket = io.connect('http://localhost:8080');
+			
+			function uploadfile(){
+				var Content = '<h2 style="text-align: center;">Live File Transfer</h2><span id="UploadArea"><label for="FileBox">Choose A File: </label><input type="file" id="FileBox"><br><label for="NameBox">Name: </label><input type="text" id="NameBox"><br><button	type="button" id="UploadButton" class="Button">Upload</button></span>';
+				document.getElementById('UploadBox').style.height = '200px';
+				document.getElementById('UploadBox').innerHTML = Content;
 				if(window.File && window.FileReader){ //These are the necessary HTML5 objects the we are going to use 
 					document.getElementById('UploadButton').addEventListener('click', StartUpload);  
 					document.getElementById('FileBox').addEventListener('change', FileChosen);
@@ -18,24 +28,31 @@
 					document.getElementById('UploadArea').innerHTML = "Your Browser Doesn't Support The File API Please Update Your Browser";
 				}
 			}
+
+			function receivefile(){
+				var Content = '<h2 style="text-align: center;">Live File Transfer</h2><div><label for="username">Your id: </label><label id="username"></label><br><span id="UploadArea"></span></div>';
+				document.getElementById('UploadBox').style.height = '100px';
+				document.getElementById('UploadBox').innerHTML = Content;
+				
+				//var socket = io.connect('http://infocomputer.org:8080');
+				socket.emit('getid');
+				
+				socket.on( 'setid', function(id) { 
+					//console.log(id);
+					document.getElementById('username').innerHTML=id;
+				});		
+			
+			}
+			
 			var SelectedFile;
 			function FileChosen(evnt) {
 				SelectedFile = evnt.target.files[0];
 				document.getElementById('NameBox').value = SelectedFile.name;
 		    }
 		
-			var socket = io.connect('http://infocomputer.org:8080');
 			var FReader;
 			var Name;
 			
-			socket.on( 'connect', function() { 
-				socket.emit('getid');
-			});		
-			
-			socket.on( 'setid', function(id) { 
-				document.getElementById('username').value=id;
-			});		
-
 			function StartUpload(){
 				var id=prompt("Input your friend's id to send file");	
 				if (id===null || id ==="")		
@@ -43,10 +60,15 @@
 				else {
 					socket.emit('confirm', id, socket.io.engine.id);
 				}
-
 			}
+
+			socket.on('nouser',function()
+			{
+				alert("Friend's id not found");
+			});
+
 			socket.on('confirmation', function(socketto){
-				console.log(socketto);
+				//console.log(socketto);
 				var hi= confirm("Accept connection?");
 				if (hi== true){
 					socket.emit('confirmation', socketto, true);
@@ -66,7 +88,6 @@
 				if(document.getElementById('FileBox').value != "")
 				{
 					FReader = new FileReader();
-					username = document.getElementById('username').value;
 					Name = document.getElementById('NameBox').value;
 					var Content = "<span id='NameArea'>Uploading " + SelectedFile.name + "</span>";
 					Content += '<div id="ProgressContainer"><div id="ProgressBar"></div></div><span id="percent">50%</span>';
@@ -75,9 +96,9 @@
 					document.getElementById('UploadBox').style.height = '150px';
 					document.getElementById('UploadBox').style.textAlign = 'center';
 					FReader.onload = function(evnt){
-						socket.emit('Upload', { 'Name' : Name, Data : evnt.target.result , 'username': username });
+						socket.emit('Upload', { 'Name' : Name, Data : evnt.target.result });
 					}
-					socket.emit('Start', { 'Name' : Name, 'Size' : SelectedFile.size, 'username': username });
+					socket.emit('Start', { 'Name' : Name, 'Size' : SelectedFile.size });
 				}
 				else
 				{
@@ -91,7 +112,6 @@
 				document.getElementById('UploadArea').innerHTML = Content;
 				document.getElementById('UploadBox').style.height = '150px';
 				document.getElementById('UploadBox').style.textAlign = 'center';
-
 			})
 
 			socket.on('MoreData', function (data){
@@ -102,7 +122,7 @@
 					NewFile = SelectedFile.webkitSlice(Place, Place + Math.min(524288, (SelectedFile.size-Place)));
 				}
 				else if (SelectedFile.mozSlice){
-					console.log(SelectedFile);
+					//console.log(SelectedFile);
 					NewFile = SelectedFile.mozSlice(Place, Place + Math.min(524288, (SelectedFile.size-Place)));
 				
 				}
@@ -131,9 +151,9 @@
 			});
 			
 			socket.on('Doneclient', function (data){
-				console.log(data);
+				//console.log(data);
 				var Content = "File " + data.name + " Successfully Uploaded !!"
-				Content += "<a href='http://infocomputer.org/download/"+data.name+"'><button	type='button' name='Upload' value='' id='Restart' class='Button' >Click here to download file</button></a>";
+				Content += "<a href='http://localhost:8080/download/"+data.name+"'><button	type='button' name='Upload' value='' id='Restart' class='Button' >Click here to download file</button></a>";
 				document.getElementById('UploadArea').innerHTML = Content;
 				//document.getElementById('Restart').addEventListener('click', Refresh);
 				document.getElementById('UploadBox').style.width = '350px';
@@ -149,8 +169,8 @@
 				//}
 			}
 		</script>
-		<style type="text/css" media="screen">
-			body {
+<style type="text/css" media="screen">
+body {
 	background: #F9F9F9;
 	font-family: Calibri;
 	font-size: 18px;
@@ -199,10 +219,10 @@ h2 {
 	left: 50%;
 	margin-left: -200px;
 	margin-top: -150px;
-	height: 250px;
-	width: 400px;
-	border: 1px solid #DFDFDF;
-
+	height: 150px;
+	width: 405px;
+	border: 3px solid #6b0d6b;
+	/*border: 1px solid #DFDFDF;*/ 
 	-webkit-box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
 	-moz-box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
 	box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
@@ -227,9 +247,6 @@ button.Button {
 	-moz-box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 3px rgba(255,255,255,0.4);
 	box-shadow: 0px 1px 3px rgba(000,000,000,0.5), inset 0px 0px 3px rgba(255,255,255,0.4);
 	text-shadow: 0px -1px 0px rgba(000,000,000,0.1), 0px 1px 0px rgba(145,035,145,1);
-	position: absolute;
-	bottom: 20px;
-	right: 20px;
 	cursor: pointer;
 	margin: auto;
 }
@@ -265,13 +282,22 @@ input[type=text] {
 	</head>
 	<body> 
 		<div id="UploadBox">
-			<h2>Live File Transfer</h2>
-			<span id='UploadArea'>
-				<label for="FileBox">Choose A File: </label><input type="file" id="FileBox"><br>
-				<label for="NameBox">Name: </label><input type="text" id="NameBox"><br>
-				<label for="username">id: </label><input type="text" id="username"><br>
-				<button	type='button' id='UploadButton' class='Button'>Upload</button>
-			</span>
+			<h2 style="text-align: center;">Live File Transfer</h2>
+			<button	type='button' id='uploadfile' class='Button' style="width:200px; height:80px">Upload File</button>
+			<button	type='button' id='receivefile' class='Button' style="width:200px; height:80px">Receive File</button>
+			<!--<h2 style="text-align: center;">Live File Transfer</h2>-->
+			<!--<span id='UploadArea'>-->
+				<!--<label for="FileBox">Choose A File: </label><input type="file" id="FileBox"><br>-->
+				<!--<label for="NameBox">Name: </label><input type="text" id="NameBox"><br>-->
+				<!--<label for="username">id: </label><input type="text" id="username"><br>-->
+				<!--<button	type='button' id='UploadButton' class='Button'>Upload</button>-->
+			<!--</span>-->
+			
+			<!--
+	position: absolute;
+	bottom: 20px;
+	right: 20px;-->
+
 		</div>
 	</body>
 </html>

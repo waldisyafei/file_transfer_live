@@ -1,6 +1,5 @@
 var fs			= require('fs')
 	, exec		= require('child_process').exec
-	//, util		= require('util')
 	, child		= require('child_process')
 	, mimetype	= require('mimetype')  
 	, express	= require('express')
@@ -14,7 +13,6 @@ var fs			= require('fs')
 	, client	= []
 	, Files		= {};
 
-
 function DownloadFile(req, res){
 	try {
 		var filestream = fs.createReadStream("./temp/"+req.params.filename);
@@ -27,8 +25,6 @@ function DownloadFile(req, res){
 
 router.get('/download/:filename', DownloadFile);
 router.get('/', function(req, res){
-  console.log("Request from : " + req.socket.remoteAddress);
-  //res.send("Hello this is fwfly upload download server")
 	res.sendFile(path.join(__dirname + '/index.html'));
 });
 
@@ -59,7 +55,14 @@ io.sockets.on('connection', function (socket) {
 	socket.on('confirm', function(id, idto){
 		try {
 			db.hget(id, "socketid", function (err,obj){
-				socket.broadcast.to(obj).emit('confirmation', idto);
+				if (obj!=null)
+				{
+					socket.broadcast.to(obj).emit('confirmation', idto);
+				}
+				else
+				{
+					socket.emit('nouser');
+				}
 			})
 		} catch (e) { console.log(e); }
 	});
@@ -132,28 +135,9 @@ io.sockets.on('connection', function (socket) {
 			if(Files[Name]['Downloaded'] == Files[Name]['FileSize']) //If File is Fully Uploaded
 			{
 				fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, Writen){
-					//var inp = fs.createReadStream("temp/" + Name);
-					//var out = fs.createWriteStream("file/" + Name);
-					
-					//inp.pipe(out);
-					//inp.on('end', function(){
-						//fs.unlink("temp/" + Name, function () { //This Deletes The Temporary File
-							//exec("ffmpeg -i Video/" + Name  + " -ss 01:30 -r 1 -an -vframes 1 -f mjpeg Video/" + Name  + ".jpg", function(err){
-								
-							socket.emit('Done', {'Image' : 'temp/' + Name + '.jpg'});
-							socket.broadcast.to(client[1]).emit('Doneclient', {'name' : Name });
-							//});
-						//});
-					});
-
-					//util.pump(inp, out, function(){
-						//fs.unlink("temp/" + Name, function () { //This Deletes The Temporary File
-							//exec("ffmpeg -i Video/" + Name  + " -ss 01:30 -r 1 -an -vframes 1 -f mjpeg Video/" + Name  + ".jpg", function(err){
-								//socket.emit('Done', {'Image' : 'Video/' + Name + '.jpg'});
-							//});
-						//});
-					//});
-				//});
+					socket.emit('Done', {'Image' : 'temp/' + Name + '.jpg'});
+					socket.broadcast.to(client[1]).emit('Doneclient', {'name' : Name });
+				});
 			}
 			else if(Files[Name]['Data'].length > 10485760){ //If the Data Buffer reaches 10MB
 				fs.write(Files[Name]['Handler'], Files[Name]['Data'], null, 'Binary', function(err, Writen){
